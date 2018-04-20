@@ -1,3 +1,7 @@
+git: arnaudbletterer
+    Correcting the compilation problems when working with MACOS X
+    Make sure that xerces is installed and that XERCES_ROOT is defined and pointing to the directory where xerces has been installed
+
 2011-03-10: roland_schwarz
     Added E57RefImplConfig.cmake for user project configuration.
     The build instructions can be found inside the CMakeLists.txt file.
