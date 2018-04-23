@@ -37,7 +37,8 @@ int main(int argc, char** argv)
 {
     try {
         /// Read file from disk
-        ImageFile imf("foo.e57", "r");
+
+        ImageFile imf(argv[1], "r");
         StructureNode root = imf.root();
 
         /// Make sure vector of scans is defined and of expected type.
@@ -64,14 +65,8 @@ int main(int argc, char** argv)
         for (int scanIndex = 0; scanIndex < scanCount; scanIndex++) {
             /// Get scan from "/data3D", assume its a Structure (else get exception)
             StructureNode scan(data3D.get(scanIndex));
-            cout << "got:" << scan.pathName() << endl;
-
-            /// Get "points" field in scan.  Should be a CompressedVectorNode.
-            CompressedVectorNode points(scan.get("points"));
-            cout << "got:" << points.pathName() << endl;
-
-            /// Call subroutine in this file to print the points
-            printSomePoints(imf, points);
+            cout << "pathName :" << scan.pathName() << endl;
+            cout << "elementName:" << scan.elementName() << endl;
         }
 
         imf.close();
@@ -88,50 +83,49 @@ int main(int argc, char** argv)
     return 0;
 }
 
+// void printSomePoints(ImageFile imf, CompressedVectorNode points)
+// {
+//     /// Need to figure out if has Cartesian or spherical coordinate system.
+//     /// Interrogate the CompressedVector's prototype of its records.
+//     StructureNode proto(points.prototype());
 
-void printSomePoints(ImageFile imf, CompressedVectorNode points)
-{
-    /// Need to figure out if has Cartesian or spherical coordinate system.
-    /// Interrogate the CompressedVector's prototype of its records.
-    StructureNode proto(points.prototype());
+//     /// The prototype should have a field named either "cartesianX" or "sphericalRange".
+//     if (proto.isDefined("cartesianX") && proto.isDefined("cartesianY") && proto.isDefined("cartesianZ")) {
+// #if 1  //??? pick one?
+//         /// Make a list of buffers to receive the xyz values.
+//         const int N = 4;
+//         vector<SourceDestBuffer> destBuffers;
+//         double x[N];     destBuffers.push_back(SourceDestBuffer(imf, "cartesianX", x, N, true));
+//         double y[N];     destBuffers.push_back(SourceDestBuffer(imf, "cartesianY", y, N, true));
+//         double z[N];     destBuffers.push_back(SourceDestBuffer(imf, "cartesianZ", z, N, true));
 
-    /// The prototype should have a field named either "cartesianX" or "sphericalRange".
-    if (proto.isDefined("cartesianX") && proto.isDefined("cartesianY") && proto.isDefined("cartesianZ")) {
-#if 1  //??? pick one?
-        /// Make a list of buffers to receive the xyz values.
-        const int N = 4;
-        vector<SourceDestBuffer> destBuffers;
-        double x[N];     destBuffers.push_back(SourceDestBuffer(imf, "cartesianX", x, N, true));
-        double y[N];     destBuffers.push_back(SourceDestBuffer(imf, "cartesianY", y, N, true));
-        double z[N];     destBuffers.push_back(SourceDestBuffer(imf, "cartesianZ", z, N, true));
+//         /// Create a reader of the points CompressedVector, try to read first block of N points
+//         /// Each call to reader.read() will fill the xyz buffers until the points are exhausted.
+//         CompressedVectorReader reader = points.reader(destBuffers);
+//         unsigned gotCount = reader.read();
+//         cout << "  got first " << gotCount << " points" << endl;
 
-        /// Create a reader of the points CompressedVector, try to read first block of N points
-        /// Each call to reader.read() will fill the xyz buffers until the points are exhausted.
-        CompressedVectorReader reader = points.reader(destBuffers);
-        unsigned gotCount = reader.read();
-        cout << "  got first " << gotCount << " points" << endl;
+//         /// Print the coordinates we got
+//         for (unsigned i=0; i < gotCount; i++)
+//             cout << "  " << i << ". x=" << x[i] << " y=" << y[i] << " z=" << z[i] << endl;
+// #else
+//         /// Make a list of buffers to receive the xyz values.
+//         vector<SourceDestBuffer> destBuffers;
+//         int64_t columnIndex[10];     destBuffers.push_back(SourceDestBuffer(imf, "columnIndex", columnIndex, 10, true));
 
-        /// Print the coordinates we got
-        for (unsigned i=0; i < gotCount; i++)
-            cout << "  " << i << ". x=" << x[i] << " y=" << y[i] << " z=" << z[i] << endl;
-#else
-        /// Make a list of buffers to receive the xyz values.
-        vector<SourceDestBuffer> destBuffers;
-        int64_t columnIndex[10];     destBuffers.push_back(SourceDestBuffer(imf, "columnIndex", columnIndex, 10, true));
+//         /// Create a reader of the points CompressedVector, try to read first block of 4 columnIndex
+//         /// Each call to reader.read() will fill the xyz buffers until the points are exhausted.
+//         CompressedVectorReader reader = points.reader(destBuffers);
+//         unsigned gotCount = reader.read();
+//         cout << "  got first " << gotCount << " points" << endl;
 
-        /// Create a reader of the points CompressedVector, try to read first block of 4 columnIndex
-        /// Each call to reader.read() will fill the xyz buffers until the points are exhausted.
-        CompressedVectorReader reader = points.reader(destBuffers);
-        unsigned gotCount = reader.read();
-        cout << "  got first " << gotCount << " points" << endl;
-
-        /// Print the coordinates we got
-        for (unsigned i=0; i < gotCount; i++)
-            cout << "  " << i << ". columnIndex=" << columnIndex[i] << endl;
-#endif
-        reader.close();
-    } else if (proto.isDefined("sphericalRange")) {
-        //??? not implemented yet
-    } else
-        cout << "Error: couldn't find either Cartesian or spherical points in scan" << endl;
-}
+//         /// Print the coordinates we got
+//         for (unsigned i=0; i < gotCount; i++)
+//             cout << "  " << i << ". columnIndex=" << columnIndex[i] << endl;
+// #endif
+//         reader.close();
+//     } else if (proto.isDefined("sphericalRange")) {
+//         //??? not implemented yet
+//     } else
+//         cout << "Error: couldn't find either Cartesian or spherical points in scan" << endl;
+// }
