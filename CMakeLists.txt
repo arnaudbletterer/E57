@@ -31,6 +31,8 @@ cmake_minimum_required(VERSION 2.8.2)
 set(CMAKE_USER_MAKE_RULES_OVERRIDE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/c_flag_overrides.cmake)
 set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cxx_flag_overrides.cmake)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+
 # Set a private module find path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
@@ -139,6 +141,20 @@ set_target_properties( E57RefImpl
 )
 
 #
+# The simple implementation
+#
+
+add_library( E57SimpleImpl STATIC
+    src/refimpl/E57Simple.cpp
+    src/refimpl/E57SimpleImpl.cpp
+    src/refimpl/E57SimpleImpl.h
+    include/E57Simple.h
+)
+set_target_properties( E57RefImpl
+    PROPERTIES DEBUG_POSTFIX "-d"
+)
+
+#
 # Files for LAS format support
 #
 
@@ -227,6 +243,18 @@ target_link_libraries( e57unpack
     ${Boost_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
 )
+add_executable( e57reader
+    src/tools/e57reader.cpp
+)
+target_link_libraries( e57reader
+    E57RefImpl
+    E57SimpleImpl
+    stdc++fs
+    time_conversion
+    ${XML_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+)
 
 #
 # Install section
@@ -237,6 +265,7 @@ install(
         E57RefImpl
         e57fields
         e57xmldump
+        e57reader
         e57unpack
         e57validate
         las2e57
