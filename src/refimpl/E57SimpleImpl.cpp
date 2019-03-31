@@ -44,7 +44,7 @@
 
 //! @file E57SimpleImpl.cpp
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #  if defined(_MSC_VER)
 #    include <io.h>
 #    include <fcntl.h>
@@ -66,7 +66,7 @@
 #  else
 #    error "no supported compiler defined"
 #  endif
-#elif defined(LINUX)
+#elif defined(__linux__)
 #  define _LARGEFILE64_SOURCE
 #  define __LARGE64_FILES
 #  include <sys/types.h>

@@ -697,7 +697,7 @@ public:
     void        dump(int indent = 0, std::ostream& os = std::cout);
 //================
 private:
-    typedef unordered_map<int64_t, LineGroup> GroupsMap;
+    typedef std::unordered_map<int64_t, LineGroup> GroupsMap;
 
     bool        isDefined_;
     bool        isByRow_;

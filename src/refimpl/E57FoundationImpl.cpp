@@ -32,7 +32,7 @@
 //								Added pageSize to E57FileHeader
 //								Changed Version to 1.0
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #  if defined(_MSC_VER)
 #    include <io.h>
 #    include <fcntl.h>
@@ -48,7 +48,7 @@
 #  else
 #    error "no supported compiler defined"
 #  endif
-#elif defined(LINUX)
+#elif defined(__linux__)
 #  define _LARGEFILE64_SOURCE
 #  define __LARGE64_FILES
 #  include <sys/types.h>
@@ -4759,7 +4759,7 @@ void CheckedFile::seek(uint64_t offset, OffsetMode omode)
 
 uint64_t CheckedFile::lseek64(int64_t offset, int whence)
 {
-#if defined(WIN32)
+#if defined(_WIN32)
 #  if defined(_MSC_VER) || defined(__MINGW32__) //<rs 2010-06-16> mingw _is_ WIN32!
     __int64 result = _lseeki64(fd_, offset, whence);
 #  elif defined(__GNUC__) //<rs 2010-06-16> this most likely will not get triggered (cygwin != WIN32)?
@@ -4771,7 +4771,7 @@ uint64_t CheckedFile::lseek64(int64_t offset, int whence)
 #  else
 #    error "no supported compiler defined"
 #  endif
-#elif defined(LINUX)
+#elif defined(__linux__)
     int64_t result = ::lseek64(fd_, offset, whence);
 #elif defined(__APPLE__)
     int64_t result = ::lseek(fd_, offset, whence);
