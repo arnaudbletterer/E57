@@ -1,11 +1,12 @@
 #include <array>
 #include <fstream>
-#include <experimental/filesystem>
 #include <iostream>
 #include <map>
 #include <sstream>
 #include <string>
 #include <cmath>
+
+#include <boost/filesystem.hpp>
 
 #include "E57Foundation.h"
 #include "E57Simple.h"
@@ -187,22 +188,23 @@ void oneStation_E57_to_bin(e57::Reader &eReader, int scanIndex, char *param[])
     matrix.m30 = matrix.m31 = matrix.m32 = 0;
     matrix.m33 = 1;
 
-    auto dirName = param[2] + scanHeader.name;///*bsFile.substr(0, 9) + "_" +*/ bstrDesc.substr(11, 11);//
-    std::string defaultName = dirName + "/" + scanHeader.name;///*bsFile.substr(0, 9) + "_" +*/ bstrDesc.substr(11, 11);//
-    std::string station_name = defaultName;
-    {//check if a folder with the same name already exists. If so, append _bis-x, where x is a number from 1 up to find a different name
-        auto dirNamebkp = dirName;
-        auto station_namebkp = station_name;
-        int count = 1;
-        while (!std::experimental::filesystem::create_directory(dirName))
-        {
-            dirName = dirNamebkp + "_bis-" + std::to_string(count);
-            station_name = station_namebkp + "_bis-" + std::to_string(count);
-            ++count;
-        }
+
+    boost::filesystem::path path(param[2]);
+    auto basename = path.stem().string() + "_" + std::to_string(scanIndex);
+    std::replace(basename.begin(), basename.end(), ' ', '_');
+    path /= basename;
+    auto directory_name = path.string();
+    std::string station_name = path.stem().string();
+
+    if (!boost::filesystem::is_directory(directory_name))
+    {
+        boost::filesystem::create_directories(directory_name);
     }
     
-    std::cout << station_name.substr(station_name.find_last_of('/')+1, station_name.size());
+    std::cout << station_name;
+
+    station_name = directory_name + "/" + station_name;
+
     //   return 0;
     //   ISI::Point translation;
     //   translation.x(scanHeader.pose.translation.x);
@@ -567,7 +569,7 @@ void write_station_to_bin(const std::string &station_name,
                           const std::vector<Colors> &colors,
                           const std::vector<double> &intensity)
 {
-    enum file_type
+    enum class file_type
     {
         PTS = 0,
         PTX,
@@ -577,11 +579,11 @@ void write_station_to_bin(const std::string &station_name,
     };
 
     file_type type = file_type::PTX;
-    uint64_t nbP = nRow * nColumn;
+    uint64_t nbP = uint64_t(nRow) * uint64_t(nColumn);
     uint64_t w = nColumn;
     uint64_t h = nRow;
 
-    std::string matrix_filename = station_name + "_points.tform";
+    std::string matrix_filename = boost::filesystem::path(station_name).parent_path().string() + ".tform";
     std::ofstream matrix_file(matrix_filename);
     matrix_file << matrix.m00 << " " << matrix.m01 << " " << matrix.m02 << " " << matrix.m03 << std::endl;
     matrix_file << matrix.m10 << " " << matrix.m11 << " " << matrix.m12 << " " << matrix.m13 << std::endl;

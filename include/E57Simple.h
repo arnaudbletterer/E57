@@ -53,6 +53,9 @@
 #ifndef E57SIMPLE_H_INCLUDED
 #define E57SIMPLE_H_INCLUDED
 
+#define NOMINMAX
+#include <windows.h>
+
 #ifndef E57FOUNDATION_H_INCLUDED
 #include "E57Foundation.h"
 #endif
@@ -227,7 +230,7 @@ public:
 #if defined(WIN32)
 //! @brief This function sets the date and time from the Windows System Time;
 	void		SetSystemTime(
-							SYSTEMTIME	sysTim		//!< Windows System Time
+							struct _SYSTEMTIME 	sysTim		//!< Windows System Time
 							);
 //! @brief This function gets the date and time from the Windows System Time;
 	void		GetSystemTime(
